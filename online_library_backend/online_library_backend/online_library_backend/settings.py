@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 environ.Env.read_env(BASE_DIR / '.env')
 
-SMS_API_KEY = env('SMS_API_KEY')
+# SMS_API_KEY = env('SMS_API_KEY')
 
 
 # Quick-start development settings - unsuitable for production
@@ -38,6 +38,17 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=180),
     'ROTATE_REFRESH_TOKEN': False,
+}
+
+
+SWAGGER_SETTINGS = {
+   'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+        }
+    }
 }
 
 REST_FRAMEWORK = {
