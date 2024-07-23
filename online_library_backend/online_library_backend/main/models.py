@@ -8,12 +8,16 @@ class Author(models.Model):
     name = models.CharField(max_length=255)
     biography = models.TextField(default='Empty')
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return str(self.name)
 
     def created_at_formatted(self):
         return timesince(self.created_at)
+    
+    def updated_at_formatted(self):
+        return timesince(self.updated_at)
 
     class Meta:
         verbose_name = 'Author'
@@ -23,12 +27,16 @@ class Author(models.Model):
 class Genre(models.Model):
     name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return str(self.name)
 
     def created_at_formatted(self):
         return timesince(self.created_at)
+    
+    def updated_at_formatted(self):
+        return timesince(self.updated_at)
 
     class Meta:
         verbose_name = 'Genre'
@@ -46,6 +54,7 @@ class Book(models.Model):
     genre = models.ForeignKey(Genre, on_delete=models.CASCADE, verbose_name='Genre')
     published_at = models.CharField(max_length=4, default='....')
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     rating_count = models.IntegerField(default=0)
     favourites_count = models.IntegerField(default=0)
@@ -75,6 +84,9 @@ class Book(models.Model):
 
     def created_at_formatted(self):
         return timesince(self.created_at)
+    
+    def updated_at_formatted(self):
+        return timesince(self.updated_at)
 
     class Meta:
         verbose_name = 'Book'
@@ -86,12 +98,16 @@ class Purchase(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE, verbose_name='Book')
     price = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return str(self.purchased_at)
 
     def created_at_formatted(self):
         return timesince(self.created_at)
+    
+    def updated_at_formatted(self):
+        return timesince(self.updated_at)
 
     class Meta:
         verbose_name = 'Purchase'
@@ -103,12 +119,16 @@ class Review(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE, verbose_name='Book')
     rating = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return str(self.created_at)
 
     def created_at_formatted(self):
         return timesince(self.created_at)
+    
+    def updated_at_formatted(self):
+        return timesince(self.updated_at)
 
     class Meta:
         verbose_name = 'Review'
@@ -119,12 +139,16 @@ class Favourite(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='User')
     book = models.ForeignKey(Book, on_delete=models.CASCADE, verbose_name='Book')
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return str(self.created_at)
 
     def created_at_formatted(self):
         return timesince(self.created_at)
+    
+    def updated_at_formatted(self):
+        return timesince(self.updated_at)
 
     class Meta:
         verbose_name = 'Favourite'
