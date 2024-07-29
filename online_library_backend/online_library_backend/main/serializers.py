@@ -12,10 +12,12 @@ class AuthorSerializer(serializers.ModelSerializer):
         model = Author
         fields = ('id', 'biography', 'created_at_formatted',)
 
+
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
         fields = ('id', 'name', 'created_at_formatted',)
+
 
 class BookSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)

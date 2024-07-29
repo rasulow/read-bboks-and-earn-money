@@ -164,8 +164,10 @@ class GenreListView(APIView):
 class PurchaseBookView(APIView):
     @swagger_auto_schema(
         request_body=PurchaseSerializer,
-        responses={201: openapi.Response('Purchase successful', PurchaseSerializer),
-                   400: 'Bad Request'}
+        responses={
+            201: openapi.Response('Purchase successful', PurchaseSerializer),
+            400: 'Bad Request'
+        }
     )
     def post(self, request):
         user = request.user
