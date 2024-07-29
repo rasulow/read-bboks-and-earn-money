@@ -19,6 +19,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class BookSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
+    genre = GenreSerializer(read_only=True)
 
     class Meta:
         model = Book
@@ -39,9 +40,15 @@ class BookSerializer(serializers.ModelSerializer):
             'favourites_count',
         )
 
+
 class FavouriteSerializer(serializers.ModelSerializer):
     book = BookSerializer(read_only=True)
 
     class Meta:
         model = Favourite
         fields = ('id', 'user', 'book', 'created_at_formatted',)
+
+
+
+class PurchaseSerializer(serializers.Serializer):
+    book_id = serializers.IntegerField()

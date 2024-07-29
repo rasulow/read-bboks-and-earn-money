@@ -96,18 +96,23 @@ class Book(models.Model):
 class Purchase(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='User')
     book = models.ForeignKey(Book, on_delete=models.CASCADE, verbose_name='Book')
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    word = models.CharField(max_length=50, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return str(self.purchased_at)
+        return str(self.book)
 
     def created_at_formatted(self):
         return timesince(self.created_at)
     
     def updated_at_formatted(self):
         return timesince(self.updated_at)
+    
+    def save(self, *args, **kwargs):
+        from utils.words import get_random_word
+        self.word = get_random_word()
+        return super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'Purchase'
@@ -153,5 +158,4 @@ class Favourite(models.Model):
     class Meta:
         verbose_name = 'Favourite'
         verbose_name_plural = 'Favourites'
-
 

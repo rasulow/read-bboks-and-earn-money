@@ -1,17 +1,22 @@
+from django.urls import path, include
 from . import api
-from django.urls import path
-
 
 urlpatterns = [
-    path('books/', api.book_list, name='book_list'),
-    path('books/<int:pk>/', api.book_detail, name='book_detail'),
-    path('books/by-author/<int:pk>/', api.books_by_author, name='books_by_author'),
-    path('books/by-genre/<int:pk>/', api.books_by_genre, name='books_by_genre'),
-    path('books/<int:pk>/like/', api.like_book, name='like_book'),
-    path('books/favourites/', api.user_favourite_books, name='user_favourite_books'),
+    path('v1/', include([
+        # Book-related endpoints
+        path('books/', api.BookListView.as_view(), name='book_list'),
+        path('books/<int:pk>/', api.BookDetail.as_view(), name='book_detail'),
+        path('books/<int:pk>/like/', api.LikeBookView.as_view(), name='like_book'),
+        path('books/favourites/', api.UserFavouriteBooksView.as_view(), name='user_favourite_books'),
 
-    path('authors/', api.author_list, name='author_list'),
-    path('authors/<int:pk>/', api.author_detail, name='author_detail'),
+        # Author-related endpoints
+        path('authors/', api.AuthorListView.as_view(), name='author_list'),
+        path('authors/<int:pk>/', api.AuthorDetailView.as_view(), name='author_detail'),
 
-    path('genres/', api.genre_list, name='genre_list'),
+        # Genre-related endpoints
+        path('genres/', api.GenreListView.as_view(), name='genre_list'),
+
+        # Purchase-related endpoint
+        path('purchase-book/', api.PurchaseBookView.as_view(), name='purchase'),
+    ])),
 ]

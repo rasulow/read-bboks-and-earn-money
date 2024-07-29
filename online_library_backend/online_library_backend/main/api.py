@@ -1,118 +1,182 @@
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+
+
 from .serializers import (
     BookSerializer,
     AuthorSerializer,
     GenreSerializer,
     FavouriteSerializer,
+    PurchaseSerializer
 )
+
 from .models import (
     Book,
     Author,
     Genre,
     Favourite,
+    Purchase,
 )
-from django.http import JsonResponse
-from rest_framework.decorators import api_view
-from rest_framework.pagination import PageNumberPagination
-from django.shortcuts import get_object_or_404
+
+from utils.pagination import MyCustomPagination
 
 
-class MyCustomPagination(PageNumberPagination):
-    page_size = 10
-    page_size_query_param = 'page_size'
-    max_page_size = 1000
 
-@api_view(['GET'])
-def book_list(request):
-    books = Book.objects.all()
-    paginator = MyCustomPagination()
-    paginated_books = paginator.paginate_queryset(books, request)
-    serializer = BookSerializer(paginated_books, many=True)
 
-    return paginator.get_paginated_response(serializer.data)
+class BookListView(APIView):
+    permission_classes = [AllowAny]
+    
 
-@api_view(['GET'])
-def book_detail(request, pk):
-    try:
-        book = Book.objects.get(pk=pk)
-        serializer = BookSerializer(book)
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                'author', openapi.IN_QUERY, description="Filter by author", type=openapi.TYPE_STRING
+            ),
+            openapi.Parameter(
+                'genre', openapi.IN_QUERY, description="Filter by genre", type=openapi.TYPE_STRING
+            ),
+        ],
+        responses={200: BookSerializer(many=True)}
+    )
 
-        return JsonResponse(serializer.data)
-    except Book.DoesNotExist:
-        return JsonResponse({'error': 'Book does not exist'}, status=404)
+    def get(self, request):
+        books = Book.objects.all()
 
-@api_view(['GET'])
-def books_by_author(request, pk):
-    try:
-        author = Author.objects.get(pk=pk)
-        books = Book.objects.filter(author=author)
+        author = request.GET.get('author')
+        genre = request.GET.get('genre')
+        
+        if author:
+            books = books.filter(author__id=int(author))
+        if genre:
+            books = books.filter(genre__id=int(genre))
+
         paginator = MyCustomPagination()
         paginated_books = paginator.paginate_queryset(books, request)
         serializer = BookSerializer(paginated_books, many=True)
 
         return paginator.get_paginated_response(serializer.data)
-    except Author.DoesNotExist:
-        return JsonResponse({'error': 'Author does not exist'}, status=404)
+    
 
-@api_view(['GET'])        
-def books_by_genre(request, pk):
-    try:
-        genre = Genre.objects.get(pk=pk)
-        books = Book.objects.filter(genre=genre)
+
+class BookDetail(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, pk):
+        try:
+            book = Book.objects.get(pk=pk)
+            serializer = BookSerializer(book)
+            return JsonResponse(serializer.data)
+        except Book.DoesNotExist:
+            return JsonResponse({'error': 'Book does not exist'}, status=404)
+        
+
+
+class LikeBookView(APIView):
+
+    def post(self, request, pk):
+        user = request.user
+        book = get_object_or_404(Book, pk=pk)
+
+        try:
+            favourite = Favourite.objects.get(user=user, book=book)
+            favourite.delete()
+            return Response({'message': 'Book unliked'}, status=status.HTTP_200_OK)
+        except Favourite.DoesNotExist:
+            Favourite.objects.create(user=user, book=book)
+            return Response({'message': 'Book liked'}, status=status.HTTP_200_OK)
+
+
+class UserFavouriteBooksView(APIView):
+    
+    def get(self, request):
+        user = request.user
+        favourites = Favourite.objects.filter(user=user)
         paginator = MyCustomPagination()
-        paginated_books = paginator.paginate_queryset(books, request)
-        serializer = BookSerializer(paginated_books, many=True)
+        paginated_favourites = paginator.paginate_queryset(favourites, request)
+        serializer = FavouriteSerializer(paginated_favourites, many=True)
 
         return paginator.get_paginated_response(serializer.data)
-    except Genre.DoesNotExist:
-        return JsonResponse({'error': 'Genre does not exist'}, status=404)
+    
 
-@api_view(['POST'])
-def like_book(request, pk):
-    user = request.user
-    book = get_object_or_404(Book, pk=pk)
+    @swagger_auto_schema(
+        request_body=PurchaseSerializer,
+        responses={
+            201: openapi.Response('Favourite added successful', PurchaseSerializer),
+            400: 'Bad Request'}
+    )
+    def post(self, request):
+        user = request.user
+        serializer = PurchaseSerializer(data=request.data)
+        if serializer.is_valid():
+            book_id = serializer.validated_data['book_id']
+            book = get_object_or_404(Book, id=book_id)
+            favourite = Favourite.objects.create(user=user, book=book)
+            response = {
+                'message': 'Favourite added successfully',
+            }
+            return Response(response, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    try:
-        favourite = Favourite.objects.get(user=user, book=book)
-        favourite.delete()
 
-        return JsonResponse({'message': 'Book unliked'}, status=200)
-    except Favourite.DoesNotExist:
-        Favourite.objects.create(user=user, book=book)
 
-        return JsonResponse({'message': 'Book liked'}, status=200)
+class AuthorListView(APIView):
+    permission_classes = [AllowAny]
+    
+    def get(self, request):
+        authors = Author.objects.all()
+        paginator = MyCustomPagination()
+        paginated_authors = paginator.paginate_queryset(authors, request)
+        serializer = AuthorSerializer(paginated_authors, many=True)
 
-@api_view(['GET'])
-def user_favourite_books(request):
-    user = request.user
-    favourites = Favourite.objects.filter(user=user)
-    paginator = MyCustomPagination()
-    paginated_favourites = paginator.paginate_queryset(favourites, request)
-    serializer = FavouriteSerializer(paginated_favourites, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
-    return paginator.get_paginated_response(serializer.data)
 
-@api_view(['GET'])
-def author_list(request):
-    authors = Author.objects.all()
-    paginator = MyCustomPagination()
-    paginated_authors = paginator.paginate_queryset(authors, request)
-    serializer = AuthorSerializer(paginated_authors, many=True)
-
-    return paginator.get_paginated_response(serializer.data)
-
-@api_view(['GET'])
-def author_detail(request, pk):
-    try:
-        author = Author.objects.get(pk=pk)
+class AuthorDetailView(APIView):
+    permission_classes = [AllowAny]
+    
+    def get(self, request, pk):
+        author = get_object_or_404(Author, pk=pk)
         serializer = AuthorSerializer(author)
 
-        return JsonResponse(serializer.data)
-    except Author.DoesNotExist:
-        return JsonResponse({'error': 'Author does not exist'}, status=404)
+        return Response(serializer.data)
 
-@api_view(['GET'])
-def genre_list(request):
-    genres = Genre.objects.all()
-    serializer = GenreSerializer(genres, many=True)
 
-    return JsonResponse(serializer.data, safe=False)
+class GenreListView(APIView):
+    permission_classes = [AllowAny]
+    
+    def get(self, request):
+        genres = Genre.objects.all()
+        serializer = GenreSerializer(genres, many=True)
+
+        return Response(serializer.data)
+
+
+    
+
+
+class PurchaseBookView(APIView):
+    @swagger_auto_schema(
+        request_body=PurchaseSerializer,
+        responses={201: openapi.Response('Purchase successful', PurchaseSerializer),
+                   400: 'Bad Request'}
+    )
+    def post(self, request):
+        user = request.user
+        serializer = PurchaseSerializer(data=request.data)
+        if serializer.is_valid():
+            book_id = serializer.validated_data['book_id']
+            book = get_object_or_404(Book, id=book_id)
+            purchase = Purchase.objects.create(user=user, book=book)
+            response = {
+                'word': purchase.word,
+            }
+            return Response(response, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
