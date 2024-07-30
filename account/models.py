@@ -43,6 +43,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     user_registered_at = models.DateTimeField(auto_now_add=True)
+    balance = models.FloatField(default=0.00)
 
     objects = CustomUserManager()
 

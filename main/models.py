@@ -64,7 +64,7 @@ class Book(models.Model):
 
     def get_book(self):
         if self.book:
-            return settings.WEBSITE_URL + self.book.url
+            return self.book.url
         else:
             return ''
 
@@ -78,7 +78,7 @@ class Book(models.Model):
 
     def get_image(self):
         if self.image:
-            return settings.WEBSITE_URL + self.image.url
+            return self.image.url
         else:
             return ''
 

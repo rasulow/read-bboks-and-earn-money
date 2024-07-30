@@ -4,7 +4,7 @@ from .models import Book, Author, Purchase, Review, Favourite, Genre
 
 class BookAdmin(admin.ModelAdmin):
     list_per_page = 10
-    list_display = ('id', 'title', 'author', 'published_at', 'price', 'pages', 'get_book_ext', 'get_book_size', 'get_book', 'get_image', 'genre', 'description', 'created_at_formatted', 'rating_count', 'favourites_count',)
+    list_display = ('id', 'title', 'author', 'published_at', 'price', 'pages', 'get_book_ext', 'get_book_size', 'genre', 'created_at_formatted', 'rating_count', 'favourites_count',)
     search_fields = ('title', 'author', 'description', 'price',)
 
 admin.site.register(Book, BookAdmin)

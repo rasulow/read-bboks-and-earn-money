@@ -28,7 +28,7 @@ from utils.pagination import MyCustomPagination
 
 
 
-
+# * Book related
 class BookListView(APIView):
     permission_classes = [AllowAny]
     
@@ -44,7 +44,6 @@ class BookListView(APIView):
         ],
         responses={200: BookSerializer(many=True)}
     )
-
     def get(self, request):
         books = Book.objects.all()
 
@@ -126,6 +125,7 @@ class UserFavouriteBooksView(APIView):
 
 
 
+# * Author related
 class AuthorListView(APIView):
     permission_classes = [AllowAny]
     
@@ -148,6 +148,8 @@ class AuthorDetailView(APIView):
         return Response(serializer.data)
 
 
+
+# * Genre related
 class GenreListView(APIView):
     permission_classes = [AllowAny]
     
@@ -161,6 +163,7 @@ class GenreListView(APIView):
     
 
 
+# * Purchase related
 class PurchaseBookView(APIView):
     @swagger_auto_schema(
         request_body=PurchaseSerializer,

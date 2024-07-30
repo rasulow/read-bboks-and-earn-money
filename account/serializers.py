@@ -40,7 +40,7 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         otp = random.randint(1000, 9999)
         otp_expiry = datetime.now() + timedelta(minutes=10)
-
+        print(validated_data)
         user = User(
             phone_number=validated_data['phone_number'],
             username=validated_data['username'],

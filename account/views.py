@@ -18,6 +18,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [AllowAnySignUp]
 
+
     @action(detail=True, methods=['PATCH'])
     def verify_otp(self, request, pk=None):
         instance = self.get_object()
