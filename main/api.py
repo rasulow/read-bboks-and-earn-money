@@ -41,6 +41,9 @@ class BookListView(APIView):
             openapi.Parameter(
                 'genre', openapi.IN_QUERY, description="Filter by genre", type=openapi.TYPE_STRING
             ),
+            openapi.Parameter(
+                'search', openapi.IN_QUERY, description="Search...", type=openapi.TYPE_STRING
+            ),
         ],
         responses={200: BookSerializer(many=True)}
     )
@@ -49,11 +52,14 @@ class BookListView(APIView):
 
         author = request.GET.get('author')
         genre = request.GET.get('genre')
+        search = request.GET.get('search')
         
         if author:
             books = books.filter(author__id=int(author))
         if genre:
             books = books.filter(genre__id=int(genre))
+        if search:
+            books = books.filter(title__icontains=search) | books.filter(description__icontains=search)
 
         paginator = MyCustomPagination()
         paginated_books = paginator.paginate_queryset(books, request)
