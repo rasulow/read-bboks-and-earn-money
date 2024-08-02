@@ -19,6 +19,23 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAnySignUp]
 
 
+    def retrieve(self, request, *args, **kwargs):
+        # Get the user instance
+        user = self.get_object()
+
+        # Perform any custom logic here, for example, adding extra data
+        custom_data = {
+            'balance': user.balance
+        }
+
+        serializer = self.get_serializer(user)
+        user_data = serializer.data
+
+        # Combine the custom data with the serialized user data
+        response_data = {**user_data, **custom_data}
+
+        return Response(response_data)
+
     @action(detail=True, methods=['PATCH'])
     def verify_otp(self, request, pk=None):
         instance = self.get_object()

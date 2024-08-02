@@ -2,6 +2,10 @@ from django.db import models
 from account.models import User
 from django.conf import settings
 from django.utils.timesince import timesince
+from PyPDF2 import PdfReader
+import io
+from .managers import PurchaseManager
+
 
 
 class Author(models.Model):
@@ -81,6 +85,10 @@ class Book(models.Model):
             return self.image.url
         else:
             return ''
+        
+    def get_page_number(self):
+        pdf_reader = PdfReader(io.BytesIO(self.book.read()))
+        return len(pdf_reader.pages)
 
     def created_at_formatted(self):
         return timesince(self.created_at)
@@ -97,6 +105,8 @@ class Purchase(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='User')
     book = models.ForeignKey(Book, on_delete=models.CASCADE, verbose_name='Book')
     word = models.CharField(max_length=50, blank=True, null=True)
+    testing_word = models.CharField(max_length=50, blank=True, null=True)
+    status = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -111,7 +121,9 @@ class Purchase(models.Model):
     
     def save(self, *args, **kwargs):
         from utils.words import get_random_word
-        self.word = get_random_word()
+        if self.word is None:
+            self.word = get_random_word()
+            self.testing_word = self.word
         return super().save(*args, **kwargs)
 
     class Meta:

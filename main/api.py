@@ -13,7 +13,8 @@ from .serializers import (
     AuthorSerializer,
     GenreSerializer,
     FavouriteSerializer,
-    PurchaseSerializer
+    PurchaseSerializer,
+    CheckWordSerializer
 )
 
 from .models import (
@@ -24,6 +25,7 @@ from .models import (
     Purchase,
 )
 
+from account.models import User
 from utils.pagination import MyCustomPagination
 
 
@@ -191,3 +193,42 @@ class PurchaseBookView(APIView):
             return Response(response, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+
+
+
+class CheckWord(APIView):
+
+    @swagger_auto_schema(
+        request_body=CheckWordSerializer,
+        responses={
+            200: openapi.Response('Word checked successfully', CheckWordSerializer),
+            400: 'Bad Request'
+        }
+    )
+    def post(self, request):
+        user = request.user
+        serializer = CheckWordSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        book_id = serializer.validated_data['book_id']
+        letter = serializer.validated_data['letter'].upper()  # Ensure letter is uppercase
+
+        purchased = get_object_or_404(Purchase, book_id=book_id, user=user)
+
+        if not purchased.status:
+            return Response({'message': f'Congratulations! You guessed the word. Your balance is {user.balance}'}, status=status.HTTP_200_OK)
+
+        purchased.testing_word = purchased.testing_word.replace(letter, '', 1)
+
+        if not purchased.testing_word:
+            purchased.status = False
+            user.balance += 5
+            user.save()
+            purchased.save()
+            return Response({'message': f'Congratulations! You guessed the word. Your balance is {user.balance}'}, status=status.HTTP_200_OK)
+        
+        purchased.save()
+        return Response({'testing_word': purchased.testing_word}, status=status.HTTP_200_OK)

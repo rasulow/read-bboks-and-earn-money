@@ -10,7 +10,7 @@ from .models import (
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Author
-        fields = ('id', 'biography', 'created_at_formatted',)
+        fields = ('id', 'name', 'biography', 'created_at_formatted',)
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -35,6 +35,7 @@ class BookSerializer(serializers.ModelSerializer):
             'get_book_ext',
             'get_book_size',
             'get_image',
+            'get_page_number',
             'genre',
             'published_at',
             'created_at',
@@ -54,3 +55,9 @@ class FavouriteSerializer(serializers.ModelSerializer):
 
 class PurchaseSerializer(serializers.Serializer):
     book_id = serializers.IntegerField()
+
+
+class CheckWordSerializer(serializers.Serializer):
+    letter = serializers.CharField(max_length=50)
+    book_id = serializers.IntegerField()
+    

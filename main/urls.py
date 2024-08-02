@@ -18,5 +18,6 @@ urlpatterns = [
 
         # Purchase-related endpoint
         path('purchase-book/', api.PurchaseBookView.as_view(), name='purchase'),
+        path('book/word-check/', api.CheckWord.as_view(), name='word-check')
     ])),
 ]
