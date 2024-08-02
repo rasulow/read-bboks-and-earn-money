@@ -14,7 +14,8 @@ from .serializers import (
     GenreSerializer,
     FavouriteSerializer,
     PurchaseSerializer,
-    CheckWordSerializer
+    CheckWordSerializer,
+    PurchaseListSerializer
 )
 
 from .models import (
@@ -193,6 +194,15 @@ class PurchaseBookView(APIView):
             return Response(response, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+
+    def get(self, request):
+        user = request.user
+        purchases = Purchase.objects.filter(user=user)
+        paginator = MyCustomPagination()
+        paginated_purchases = paginator.paginate_queryset(purchases, request)
+        serializer = PurchaseListSerializer(paginated_purchases, many=True)
+        return paginator.get_paginated_response(serializer.data)
         
 
 

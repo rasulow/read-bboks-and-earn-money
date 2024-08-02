@@ -4,6 +4,7 @@ from .models import (
     Author,
     Genre,
     Favourite,
+    Purchase
 )
 
 
@@ -55,6 +56,21 @@ class FavouriteSerializer(serializers.ModelSerializer):
 
 class PurchaseSerializer(serializers.Serializer):
     book_id = serializers.IntegerField()
+
+
+class PurchaseListSerializer(serializers.ModelSerializer):
+    book_details = BookSerializer(source='book', read_only=True)
+
+    class Meta:
+        model = Purchase
+        fields = ('book_details',)
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        book_representation = representation.pop('book_details')
+        for key, value in book_representation.items():
+            representation[key] = value
+        return representation
 
 
 class CheckWordSerializer(serializers.Serializer):
