@@ -124,9 +124,9 @@ class UserFavouriteBooksView(APIView):
         if serializer.is_valid():
             book_id = serializer.validated_data['book_id']
             book = get_object_or_404(Book, id=book_id)
-            favourite = get_object_or_404(Favourite,user=user, book=book)
-            if favourite:
-                return Response({'message': 'This book is already in the favorites'}, status=status.HTTP_200_OK)
+            # favourite = get_object_or_404(Favourite, user=user, book=book)
+            # if favourite:
+            #     return Response({'message': 'This book is already in the favorites'}, status=status.HTTP_200_OK)
             favourite = Favourite.objects.create(user=user, book=book)
             response = {
                 'message': 'Favourite added successfully',
@@ -134,6 +134,19 @@ class UserFavouriteBooksView(APIView):
             return Response(response, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+
+    
+    
+
+
+class UserFavouriteDelete(APIView):
+    def delete(self, request, id):
+        user = request.user
+        favourite = get_object_or_404(Favourite, user=user, id=id)
+        favourite.delete()
+        return Response({'message': 'Favourite removed successfully'}, status=status.HTTP_200_OK)
+    
 
 
 
