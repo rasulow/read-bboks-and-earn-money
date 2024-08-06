@@ -25,12 +25,15 @@ def generate_page_nums_for_word(book_page_num: int, word_len: int) -> List[int]:
     start_index = random.randint(20, 30)
     end_index = random.randint(book_page_num - 20, book_page_num - 10)
 
-    page_nums = [
-        random.randint(start_index + 10, end_index - 10)
-        for _ in range(word_len - 2)
-    ]
+    page_nums = set()
 
+    while len(page_nums) < word_len - 2:
+        num = random.randint(start_index + 10, end_index - 10)
+        if num not in page_nums:
+            page_nums.add(num)
+
+    page_nums = list(page_nums)
     page_nums.append(start_index)
     page_nums.append(end_index)
-    
+
     return sorted(page_nums)
