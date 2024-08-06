@@ -203,6 +203,8 @@ class PurchaseBookView(APIView):
         if serializer.is_valid():
             book_id = serializer.validated_data['book_id']
             book = get_object_or_404(Book, id=book_id)
+            if Purchase.objects.filter(user=user, book=book).exists():
+                return Response({'message': 'This book has already been purchased'}, status=status.HTTP_200_OK)
             purchase = Purchase.objects.create(user=user, book=book)
             response = {
                 'word': purchase.word,
