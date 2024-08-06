@@ -129,6 +129,15 @@ class Purchase(models.Model):
     def get_page_list(self):
         return json.loads(self.page_list)
     
+    def delete_page_at_index(self, index: int):
+        page_list = self.get_page_list()
+        try:
+            del page_list[index]
+            self.set_page_list(page_list)
+            self.save()
+        except IndexError:
+            raise ValueError(f"Index {index} out of range for page list")
+    
     def save(self, *args, **kwargs):
         if not self.word:
             from utils.words import get_random_word, generate_page_nums_for_word

@@ -244,19 +244,29 @@ class CheckWord(APIView):
         book_id = serializer.validated_data['book_id']
         letter = serializer.validated_data['letter'].upper()  # Ensure letter is uppercase
 
-        purchased = get_object_or_404(Purchase, book_id=book_id, user=user)
+        book = get_object_or_404(Book, id=book_id)
+        purchased = get_object_or_404(Purchase, book=book, user=user)
 
         if not purchased.status:
             return Response({'message': f'Congratulations! You guessed the word. Your balance is {user.balance}'}, status=status.HTTP_200_OK)
 
-        purchased.testing_word = purchased.testing_word.replace(letter, '', 1)
+        # Find the index of the letter to be replaced
+        replaced_index = purchased.testing_word.find(letter)
+        if replaced_index == -1:
+            return Response({'message': 'Letter not found in testing word.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Replace the first occurrence of the letter
+        purchased.testing_word = purchased.testing_word[:replaced_index] + purchased.testing_word[replaced_index + 1:]
+        purchased.delete_page_at_index(replaced_index)
 
         if not purchased.testing_word:
             purchased.status = False
             user.balance += 5
             user.save()
             purchased.save()
-            return Response({'message': f'Congratulations! You guessed the word. Your balance is {user.balance}'}, status=status.HTTP_200_OK)
+            return Response({
+                'message': f'Congratulations! You guessed the word. Your balance is {user.balance}',
+            }, status=status.HTTP_200_OK)
         
         purchased.save()
-        return Response({'testing_word': purchased.testing_word}, status=status.HTTP_200_OK)
+        return Response({'testing_word': purchased.testing_word, 'replaced_index': replaced_index}, status=status.HTTP_200_OK)
