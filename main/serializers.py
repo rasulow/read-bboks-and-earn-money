@@ -1,4 +1,5 @@
 from rest_framework import serializers
+import json
 from .models import (
     Book,
     Author,
@@ -63,14 +64,18 @@ class PurchaseListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Purchase
-        fields = ('book_details',)
+        fields = ('id', 'book_details', 'word', 'testing_word', 'page_list', 'status')
 
+        
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        book_representation = representation.pop('book_details')
-        for key, value in book_representation.items():
-            representation[key] = value
+        representation['page_list'] = instance.get_page_list()
         return representation
+
+    def to_internal_value(self, data):
+        internal_value = super().to_internal_value(data)
+        internal_value['page_list'] = json.dumps(internal_value['page_list'])
+        return internal_value
 
 
 class CheckWordSerializer(serializers.Serializer):

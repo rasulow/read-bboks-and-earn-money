@@ -107,7 +107,7 @@ class UserFavouriteBooksView(APIView):
         favourites = Favourite.objects.filter(user=user)
         paginator = MyCustomPagination()
         paginated_favourites = paginator.paginate_queryset(favourites, request)
-        serializer = PurchaseListSerializer(paginated_favourites, many=True)
+        serializer = FavouriteSerializer(paginated_favourites, many=True)
 
         return paginator.get_paginated_response(serializer.data)
     
@@ -124,9 +124,9 @@ class UserFavouriteBooksView(APIView):
         if serializer.is_valid():
             book_id = serializer.validated_data['book_id']
             book = get_object_or_404(Book, id=book_id)
-            # favourite = get_object_or_404(Favourite, user=user, book=book)
-            # if favourite:
-            #     return Response({'message': 'This book is already in the favorites'}, status=status.HTTP_200_OK)
+            favourite = get_object_or_404(Favourite, user=user, book=book)
+            if favourite:
+                return Response({'message': 'This book is already in the favorites'}, status=status.HTTP_200_OK)
             favourite = Favourite.objects.create(user=user, book=book)
             response = {
                 'message': 'Favourite added successfully',

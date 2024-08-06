@@ -1,9 +1,11 @@
 from django.db import models
-from account.models import User
 from django.conf import settings
+from account.models import User
 from django.utils.timesince import timesince
+from typing import List
 from PyPDF2 import PdfReader
 import io
+import json
 from .managers import PurchaseManager
 
 
@@ -106,6 +108,7 @@ class Purchase(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE, verbose_name='Book')
     word = models.CharField(max_length=50, blank=True, null=True)
     testing_word = models.CharField(max_length=50, blank=True, null=True)
+    page_list = models.CharField(max_length=255, blank=True, null=True)
     status = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -119,12 +122,28 @@ class Purchase(models.Model):
     def updated_at_formatted(self):
         return timesince(self.updated_at)
     
+
+    def set_page_list(self, page_list: List[int] = []):
+        self.page_list = json.dumps(page_list)
+
+    def get_page_list(self):
+        return json.loads(self.page_list)
+    
     def save(self, *args, **kwargs):
-        from utils.words import get_random_word
-        if self.word is None:
-            self.word = get_random_word()
-            self.testing_word = self.word
-        return super().save(*args, **kwargs)
+        if not self.word:
+            from utils.words import get_random_word, generate_page_nums_for_word
+            
+            random_word = get_random_word()
+            self.word = random_word
+            self.testing_word = random_word
+            
+            book_page_num = self.book.get_page_number()
+            word_len = len(random_word)
+            page_nums = generate_page_nums_for_word(book_page_num, word_len)
+            
+            self.set_page_list(page_nums)
+        
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'Purchase'
