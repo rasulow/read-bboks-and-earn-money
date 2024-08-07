@@ -71,17 +71,21 @@ class BookListView(APIView):
         return paginator.get_paginated_response(serializer.data)
     
 
-
 class BookDetail(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, pk):
-        try:
-            book = Book.objects.get(pk=pk)
-            serializer = BookSerializer(book)
-            return JsonResponse(serializer.data)
-        except Book.DoesNotExist:
-            return JsonResponse({'error': 'Book does not exist'}, status=404)
+        book = get_object_or_404(Book, pk=pk)
+        serializer = BookSerializer(book)
+        response_data = serializer.data
+
+        if request.user.is_authenticated:
+            purchased = Purchase.objects.filter(user=request.user, book=book).exists()
+            response_data['purchased'] = purchased
+        else:
+            response_data['purchased'] = False
+
+        return Response(response_data)
         
 
 
@@ -123,10 +127,9 @@ class UserFavouriteBooksView(APIView):
         serializer = PurchaseSerializer(data=request.data)
         if serializer.is_valid():
             book_id = serializer.validated_data['book_id']
-            book = get_object_or_404(Book, id=book_id)
-            favourite = get_object_or_404(Favourite, user=user, book=book)
-            if favourite:
-                return Response({'message': 'This book is already in the favorites'}, status=status.HTTP_200_OK)
+            book = Book.objects.get(id=book_id)
+            if Favourite.objects.filter(user=user, book=book).exists():
+                return Response({'message': 'This book has already been favourited'}, status=status.HTTP_200_OK)
             favourite = Favourite.objects.create(user=user, book=book)
             response = {
                 'message': 'Favourite added successfully',
@@ -136,10 +139,6 @@ class UserFavouriteBooksView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 
-    
-    
-
-
 class UserFavouriteDelete(APIView):
     def delete(self, request, id):
         user = request.user
@@ -147,8 +146,6 @@ class UserFavouriteDelete(APIView):
         favourite.delete()
         return Response({'message': 'Favourite removed successfully'}, status=status.HTTP_200_OK)
     
-
-
 
 # * Author related
 class AuthorListView(APIView):
