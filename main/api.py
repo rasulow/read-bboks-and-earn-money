@@ -239,6 +239,7 @@ class CheckWord(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         book_id = serializer.validated_data['book_id']
+        page_number = serializer.validated_data['page_number']
         letter = serializer.validated_data['letter'].upper()  # Ensure letter is uppercase
 
         book = get_object_or_404(Book, id=book_id)
@@ -248,13 +249,18 @@ class CheckWord(APIView):
             return Response({'message': f'Congratulations! You guessed the word. Your balance is {user.balance}'}, status=status.HTTP_200_OK)
 
         # Find the index of the letter to be replaced
-        replaced_index = purchased.testing_word.find(letter)
+        page_list = purchased.get_page_list()
+        if page_number in page_list:
+            replaced_index = page_list.index(page_number)
+            del page_list[replaced_index]
         if replaced_index == -1:
             return Response({'message': 'Letter not found in testing word.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # Replace the first occurrence of the letter
+        replace_page_number = purchased.delete_page_at_index(replaced_index, letter)
+        if not replace_page_number:
+            return Response({'message': 'Letter and page number don\'t match!'}, status=status.HTTP_400_BAD_REQUEST)
         purchased.testing_word = purchased.testing_word[:replaced_index] + purchased.testing_word[replaced_index + 1:]
-        purchased.delete_page_at_index(replaced_index)
 
         if not purchased.testing_word:
             purchased.status = False

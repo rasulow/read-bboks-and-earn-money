@@ -129,12 +129,15 @@ class Purchase(models.Model):
     def get_page_list(self):
         return json.loads(self.page_list)
     
-    def delete_page_at_index(self, index: int):
+    def delete_page_at_index(self, index: int, letter: str):
         page_list = self.get_page_list()
+        if self.testing_word[index].upper() != letter.upper():
+            return False
         try:
             del page_list[index]
             self.set_page_list(page_list)
             self.save()
+            return True
         except IndexError:
             raise ValueError(f"Index {index} out of range for page list")
     

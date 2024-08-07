@@ -80,5 +80,6 @@ class PurchaseListSerializer(serializers.ModelSerializer):
 
 class CheckWordSerializer(serializers.Serializer):
     letter = serializers.CharField(max_length=50)
+    page_number = serializers.IntegerField()
     book_id = serializers.IntegerField()
     
