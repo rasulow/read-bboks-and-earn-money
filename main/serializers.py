@@ -64,17 +64,19 @@ class PurchaseListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Purchase
-        fields = ('id', 'book_details', 'word', 'testing_word', 'page_list', 'status')
+        fields = ('id', 'book_details', 'word', 'testing_word', 'testing_word_list', 'page_list', 'status')
 
         
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['page_list'] = instance.get_page_list()
+        representation['testing_word_list'] = instance.get_testing_word_list()
         return representation
 
     def to_internal_value(self, data):
         internal_value = super().to_internal_value(data)
         internal_value['page_list'] = json.dumps(internal_value['page_list'])
+        internal_value['testing_word_list'] = json.dumps(internal_value['testing_word_list'])
         return internal_value
 
 

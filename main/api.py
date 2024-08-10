@@ -260,7 +260,7 @@ class CheckWord(APIView):
         replace_page_number = purchased.delete_page_at_index(replaced_index, letter)
         if not replace_page_number:
             return Response({'message': 'Letter and page number don\'t match!'}, status=status.HTTP_400_BAD_REQUEST)
-        purchased.testing_word = purchased.testing_word[:replaced_index] + purchased.testing_word[replaced_index + 1:]
+        purchased.testing_word = purchased.testing_word[:replaced_index] + ' ' + purchased.testing_word[replaced_index + 1:]
 
         if not purchased.testing_word:
             purchased.status = False

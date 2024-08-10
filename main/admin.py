@@ -20,7 +20,7 @@ admin.site.register(Author, AuthorAdmin)
 
 class PurchaseAdmin(admin.ModelAdmin):
     list_per_page = 10
-    list_display = ('id', 'user', 'book', 'word', 'testing_word', 'page_list')
+    list_display = ('id', 'user', 'book', 'word', 'testing_word', 'page_list', 'testing_word_list',)
     search_fields = ('user', 'book',)
 
 admin.site.register(Purchase, PurchaseAdmin)

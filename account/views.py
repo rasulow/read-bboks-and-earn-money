@@ -17,6 +17,7 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAnySignUp]
+    pagination_class = None
 
 
     def retrieve(self, request, *args, **kwargs):
@@ -24,6 +25,22 @@ class UserViewSet(viewsets.ModelViewSet):
         user = self.get_object()
 
         # Perform any custom logic here, for example, adding extra data
+        custom_data = {
+            'balance': user.balance
+        }
+
+        serializer = self.get_serializer(user)
+        user_data = serializer.data
+
+        # Combine the custom data with the serialized user data
+        response_data = {**user_data, **custom_data}
+
+        return Response(response_data)
+    
+
+    def list(self, request, *args, **kwargs):
+        user = request.user
+
         custom_data = {
             'balance': user.balance
         }

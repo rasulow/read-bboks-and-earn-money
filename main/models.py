@@ -108,6 +108,7 @@ class Purchase(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE, verbose_name='Book')
     word = models.CharField(max_length=50, blank=True, null=True)
     testing_word = models.CharField(max_length=50, blank=True, null=True)
+    testing_word_list = models.CharField(max_length=50, blank=True, null=True)
     page_list = models.CharField(max_length=255, blank=True, null=True)
     status = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -122,24 +123,35 @@ class Purchase(models.Model):
     def updated_at_formatted(self):
         return timesince(self.updated_at)
     
-
-    def set_page_list(self, page_list: List[int] = []):
+    def set_page_list(self, page_list: list[int] = []):
         self.page_list = json.dumps(page_list)
 
-    def get_page_list(self):
-        return json.loads(self.page_list)
+    def get_page_list(self) -> list[int]:
+        return json.loads(self.page_list) if self.page_list else []
+
+    def set_testing_word_list(self, word_list: list[str] = []):
+        self.testing_word_list = json.dumps(word_list)
+
+    def get_testing_word_list(self) -> list[str]:
+        return json.loads(self.testing_word_list) if self.testing_word_list else []
     
-    def delete_page_at_index(self, index: int, letter: str):
-        page_list = self.get_page_list()
-        if self.testing_word[index].upper() != letter.upper():
-            return False
+    def delete_page_at_index(self, index: int, letter: str) -> bool:
         try:
-            del page_list[index]
+            page_list = self.get_page_list()
+            testing_word_list = self.get_testing_word_list()
+
+            if self.testing_word[index].upper() != letter.upper():
+                return False
+
+            testing_word_list.insert(index, letter.upper())
+            page_list[index] = 0
             self.set_page_list(page_list)
+            self.set_testing_word_list(testing_word_list)
             self.save()
             return True
-        except IndexError:
-            raise ValueError(f"Index {index} out of range for page list")
+
+        except (IndexError, ValueError) as e:
+            raise ValueError(f"Error at index {index}: {str(e)}")
     
     def save(self, *args, **kwargs):
         if not self.word:
@@ -154,6 +166,8 @@ class Purchase(models.Model):
             page_nums = generate_page_nums_for_word(book_page_num, word_len)
             
             self.set_page_list(page_nums)
+            print(1111111111111)
+            self.set_testing_word_list(['' for _ in range(word_len)])
         
         super().save(*args, **kwargs)
 
