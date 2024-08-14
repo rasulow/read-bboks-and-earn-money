@@ -129,9 +129,11 @@ class UserFavouriteBooksView(APIView):
             book_id = serializer.validated_data['book_id']
             book = Book.objects.get(id=book_id)
             if Favourite.objects.filter(user=user, book=book).exists():
-                return Response({'message': 'This book has already been favourited'}, status=status.HTTP_200_OK)
+                Favourite.objects.filter(user=user, book=book).delete()
+                return Response({'status': 'deleted', 'message': 'This book has already been favourited'}, status=status.HTTP_200_OK)
             favourite = Favourite.objects.create(user=user, book=book)
             response = {
+                'status': 'addedd', 
                 'message': 'Favourite added successfully',
             }
             return Response(response, status=status.HTTP_201_CREATED)
