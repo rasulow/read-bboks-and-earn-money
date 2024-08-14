@@ -126,13 +126,13 @@ class Purchase(models.Model):
     def set_page_list(self, page_list: List[int] = []):
         self.page_list = json.dumps(page_list)
 
-    def get_page_list(self) -> list[int]:
+    def get_page_list(self) -> List[int]:
         return json.loads(self.page_list) if self.page_list else []
 
     def set_testing_word_list(self, word_list: List[str] = []):
         self.testing_word_list = json.dumps(word_list)
 
-    def get_testing_word_list(self) -> list[str]:
+    def get_testing_word_list(self) -> List[str]:
         return json.loads(self.testing_word_list) if self.testing_word_list else []
     
     def delete_page_at_index(self, index: int, letter: str) -> bool:
