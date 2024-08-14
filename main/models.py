@@ -123,13 +123,13 @@ class Purchase(models.Model):
     def updated_at_formatted(self):
         return timesince(self.updated_at)
     
-    def set_page_list(self, page_list: list[int] = None):
+    def set_page_list(self, page_list: List[int] = []):
         self.page_list = json.dumps(page_list)
 
     def get_page_list(self) -> list[int]:
         return json.loads(self.page_list) if self.page_list else []
 
-    def set_testing_word_list(self, word_list: list[str] = None):
+    def set_testing_word_list(self, word_list: List[str] = []):
         self.testing_word_list = json.dumps(word_list)
 
     def get_testing_word_list(self) -> list[str]:
