@@ -8,7 +8,6 @@ urlpatterns = [
         path('books/<int:pk>/', api.BookDetail.as_view(), name='book_detail'),
         path('books/<int:pk>/like/', api.LikeBookView.as_view(), name='like_book'),
         path('books/favourites/', api.UserFavouriteBooksView.as_view(), name='user_favourite_books'),
-        path('books/favourites/<int:id>/', api.UserFavouriteDelete.as_view(), name='user_favourite_delete'),
 
         # Author-related endpoints
         path('authors/', api.AuthorListView.as_view(), name='author_list'),

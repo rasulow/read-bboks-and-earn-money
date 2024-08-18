@@ -141,14 +141,6 @@ class UserFavouriteBooksView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 
-class UserFavouriteDelete(APIView):
-    def delete(self, request, id):
-        user = request.user
-        favourite = get_object_or_404(Favourite, user=user, id=id)
-        favourite.delete()
-        return Response({'message': 'Favourite removed successfully'}, status=status.HTTP_200_OK)
-    
-
 # * Author related
 class AuthorListView(APIView):
     permission_classes = [AllowAny]
