@@ -10,7 +10,7 @@ class PurchaseManager(models.Manager):
         self.word = random_word
         self.testing_word = random_word
         
-        book_page_num = self.book.get_page_number()
+        book_page_num = 100
         word_len = len(random_word)
         page_nums = generate_page_nums_for_word(book_page_num, word_len)
         
