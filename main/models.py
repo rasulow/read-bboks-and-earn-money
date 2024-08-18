@@ -144,6 +144,7 @@ class Purchase(models.Model):
                 return False
 
             testing_word_list.insert(index, letter.upper())
+            print(testing_word_list)
             page_list[index] = 0
             self.set_page_list(page_list)
             self.set_testing_word_list(testing_word_list)
