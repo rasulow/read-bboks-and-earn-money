@@ -114,9 +114,6 @@ class Purchase(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-
-    objects = PurchaseManager()
-
     def __str__(self):
         return str(self.book)
 
@@ -156,6 +153,23 @@ class Purchase(models.Model):
         except (IndexError, ValueError) as e:
             raise ValueError(f"Error at index {index}: {str(e)}")
     
+    def save(self, *args, **kwargs):
+        if not self.word:
+            from utils.words import get_random_word, generate_page_nums_for_word
+            
+            random_word = get_random_word()
+            self.word = random_word
+            self.testing_word = random_word
+            
+            book_page_num = self.book.get_page_number()
+            word_len = len(random_word)
+            page_nums = generate_page_nums_for_word(book_page_num, word_len)
+            
+            self.set_page_list(page_nums)
+            print(1111111111111)
+            self.set_testing_word_list(['' for _ in range(word_len)])
+        
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'Purchase'

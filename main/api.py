@@ -141,6 +141,8 @@ class UserFavouriteBooksView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 
+
+
 # * Author related
 class AuthorListView(APIView):
     permission_classes = [AllowAny]
