@@ -246,9 +246,7 @@ class CheckWord(APIView):
 
         # Find the index of the letter to be replaced
         page_list = purchased.get_page_list()
-        if page_number in page_list:
-            replaced_index = page_list.index(page_number)
-            del page_list[replaced_index]
+        replaced_index = page_list.index(page_number)
         if replaced_index == -1:
             return Response({'message': 'Letter not found in testing word.'}, status=status.HTTP_400_BAD_REQUEST)
 
