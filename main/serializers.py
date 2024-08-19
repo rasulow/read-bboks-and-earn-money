@@ -64,7 +64,7 @@ class PurchaseListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Purchase
-        fields = ('id', 'book_details', 'word', 'testing_word', 'testing_word_list', 'page_list', 'status')
+        fields = ('id', 'book_details', 'word', 'testing_word_list', 'page_list', 'status')
 
         
     def to_representation(self, instance):

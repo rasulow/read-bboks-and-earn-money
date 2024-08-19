@@ -209,7 +209,7 @@ class PurchaseBookView(APIView):
 
     def get(self, request):
         user = request.user
-        purchases = Purchase.objects.filter(user=user)
+        purchases = Purchase.objects.filter(user=user).order_by('-id')
         paginator = MyCustomPagination()
         paginated_purchases = paginator.paginate_queryset(purchases, request)
         serializer = PurchaseListSerializer(paginated_purchases, many=True)
@@ -236,34 +236,62 @@ class CheckWord(APIView):
 
         book_id = serializer.validated_data['book_id']
         page_number = serializer.validated_data['page_number']
-        letter = serializer.validated_data['letter'].upper()  # Ensure letter is uppercase
+        letter = serializer.validated_data['letter'].upper()
 
         book = get_object_or_404(Book, id=book_id)
         purchased = get_object_or_404(Purchase, book=book, user=user)
 
         if not purchased.status:
-            return Response({'message': f'Congratulations! You guessed the word. Your balance is {user.balance}'}, status=status.HTTP_200_OK)
+            return Response(
+                {'message': f'Congratulations! You guessed the word. Your balance is {user.balance}'},
+                status=status.HTTP_200_OK
+            )
 
-        # Find the index of the letter to be replaced
+        if page_number == -1:
+            if purchased.word.upper() == letter:
+                self._process_correct_word_guess(purchased, user, letter)
+                return Response(
+                    {'message': f'Congratulations! You guessed the word. Your balance is {user.balance}'},
+                    status=status.HTTP_200_OK
+                )
+        
         page_list = purchased.get_page_list()
-        replaced_index = page_list.index(page_number)
-        if replaced_index == -1:
-            return Response({'message': 'Letter not found in testing word.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Replace the first occurrence of the letter
-        replace_page_number = purchased.delete_page_at_index(replaced_index, letter)
-        if not replace_page_number:
-            return Response({'message': 'Letter and page number don\'t match!'}, status=status.HTTP_400_BAD_REQUEST)
-        purchased.testing_word = purchased.testing_word[:replaced_index] + ' ' + purchased.testing_word[replaced_index + 1:]
+        try:
+            replaced_index = page_list.index(page_number)
+        except ValueError:
+            return Response(
+                {'message': 'Page number not found in testing word.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-        if not purchased.testing_word:
+        if self._replace_letter_and_update(purchased, user, replaced_index, letter):
+            return Response(
+                {'message': f'Congratulations! You guessed the word. Your balance is {user.balance}'},
+                status=status.HTTP_200_OK
+            )
+
+        return Response({'replaced_index': replaced_index}, status=status.HTTP_200_OK)
+
+    def _process_correct_word_guess(self, purchased, user, letter):
+        purchased.status = False
+        user.balance += 5
+        user.save()
+
+        testing_word_list = [let.upper() for let in letter]
+        page_list = [0] * len(letter)
+
+        purchased.set_testing_word_list(testing_word_list)
+        purchased.set_page_list(page_list)
+        purchased.save()
+
+    def _replace_letter_and_update(self, purchased, user, index, letter):
+        replace_page_number = purchased.delete_page_at_index(index, letter)
+        if replace_page_number:
             purchased.status = False
             user.balance += 5
             user.save()
             purchased.save()
-            return Response({
-                'message': f'Congratulations! You guessed the word. Your balance is {user.balance}',
-            }, status=status.HTTP_200_OK)
-        
+            return True
         purchased.save()
-        return Response({'testing_word': purchased.testing_word, 'replaced_index': replaced_index}, status=status.HTTP_200_OK)
+        return False

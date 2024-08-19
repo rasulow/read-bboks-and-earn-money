@@ -55,7 +55,6 @@ class Book(models.Model):
     description = models.TextField(default='...')
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     book = models.FileField(upload_to='books', max_length=500)
-    pages = models.IntegerField(default=0)
     image = models.ImageField(upload_to='books_images', max_length=500)
     genre = models.ForeignKey(Genre, on_delete=models.CASCADE, verbose_name='Genre')
     published_at = models.CharField(max_length=4, default='....')
@@ -107,7 +106,6 @@ class Purchase(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='User')
     book = models.ForeignKey(Book, on_delete=models.CASCADE, verbose_name='Book')
     word = models.CharField(max_length=50, blank=True, null=True)
-    testing_word = models.CharField(max_length=50, blank=True, null=True)
     testing_word_list = models.CharField(max_length=50, blank=True, null=True)
     page_list = models.CharField(max_length=255, blank=True, null=True)
     status = models.BooleanField(default=True)
@@ -140,16 +138,15 @@ class Purchase(models.Model):
             page_list = self.get_page_list()
             testing_word_list = self.get_testing_word_list()
 
-            if self.testing_word[index].upper() != letter.upper():
-                return False
-
-            testing_word_list.insert(index, letter.upper())
-            print(testing_word_list)
+            testing_word_list[index] = letter.upper()
             page_list[index] = 0
             self.set_page_list(page_list)
             self.set_testing_word_list(testing_word_list)
             self.save()
-            return True
+            if '' not in testing_word_list:
+                return True
+            else:
+                return False
 
         except (IndexError, ValueError) as e:
             raise ValueError(f"Error at index {index}: {str(e)}")
@@ -160,7 +157,6 @@ class Purchase(models.Model):
             
             random_word = get_random_word()
             self.word = random_word
-            self.testing_word = random_word
             
             book_page_num = self.book.get_page_number()
             word_len = len(random_word)
