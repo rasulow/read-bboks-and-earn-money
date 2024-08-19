@@ -254,6 +254,11 @@ class CheckWord(APIView):
                     {'message': f'Congratulations! You guessed the word. Your balance is {user.balance}'},
                     status=status.HTTP_200_OK
                 )
+            else:
+                return Response(
+                    {'message': f'Word is not correct!'},
+                    status=status.HTTP_200_OK
+                )
         
         page_list = purchased.get_page_list()
 
