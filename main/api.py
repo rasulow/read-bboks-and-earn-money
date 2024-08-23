@@ -1,5 +1,7 @@
 from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
+from django.conf import settings
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -34,8 +36,8 @@ from utils.pagination import MyCustomPagination
 # * Book related
 class BookListView(APIView):
     permission_classes = [AllowAny]
-    
 
+    @method_decorator(cache_page(settings.CACHE_TTL))
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(

@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    image: kitaphana
+    container_name: kitaphana-container
+    ports:
+      - 5050:8000
+      - 3000:3000
+    volumes:
+      - .:/app
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:latest
+    container_name: redis-container
+    ports:
+      - 6379:6379  # Default Redis port
+    volumes:
+      - redis_data:/data  # Persist Redis data
+
+volumes:
+  redis_data:
+
+#   grafana:
+#     image: grafana/grafana:latest
+#     ports: 
+#       - 3000:3000
+#     volumes:
+#       - grafana_data:/var/lib/grafana
+
+#   prometheus:
+#     image: prom/prometheus:latest
+#     ports:
+#       - 9090:9090
+#     command:
+#       - '--config.file=/etc/prometheus/prometheus.yml'
+#       - '--web.enable-lifecycle'
+#     volumes:
+#       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+#       - prometheus_data:/prometheus
+
+# volumes:
+#   grafana_data:
+#   prometheus_data:

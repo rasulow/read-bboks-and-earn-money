@@ -69,6 +69,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://localhost:5000',
 ]
 
+
 JAZZMIN_SETTINGS = jazzmin.JAZZMIN_SETTINGS
 
 INSTALLED_APPS = [
@@ -90,6 +91,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "apitally.django_rest_framework.ApitallyMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
 
@@ -100,6 +102,13 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+
+APITALLY_MIDDLEWARE = {
+    "client_id": "144c7b7d-20ce-4aa6-bcf3-34f22806a8ca",
+    "env": "dev",  # "prod" or "dev"
+}
+
 
 ROOT_URLCONF = 'online_library_backend.urls'
 
@@ -120,6 +129,19 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'online_library_backend.wsgi.application'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://redis-container:6379/1',  # Use the Redis container name from docker-compose
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        },
+        'KEY_PREFIX': 'kitaphana'
+    }
+}
+
+CACHE_TTL = 60 * 15
 
 
 DATABASES = {
