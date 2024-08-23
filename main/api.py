@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from django.conf import settings
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from django.core.cache import cache
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -53,7 +54,10 @@ class BookListView(APIView):
     )
     @method_decorator(cache_page(settings.CACHE_TTL))
     def get(self, request):
-        books = Book.objects.all()
+        books = cache.get('books')
+        if not books:
+            books = Book.objects.all()
+            cache.set('books', books)
 
         author = request.GET.get('author')
         genre = request.GET.get('genre')
