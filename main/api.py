@@ -37,7 +37,6 @@ from utils.pagination import MyCustomPagination
 class BookListView(APIView):
     permission_classes = [AllowAny]
 
-    @method_decorator(cache_page(settings.CACHE_TTL))
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(
@@ -52,6 +51,7 @@ class BookListView(APIView):
         ],
         responses={200: BookSerializer(many=True)}
     )
+    @method_decorator(cache_page(settings.CACHE_TTL))
     def get(self, request):
         books = Book.objects.all()
 
