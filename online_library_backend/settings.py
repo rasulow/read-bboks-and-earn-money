@@ -106,7 +106,7 @@ MIDDLEWARE = [
 
 APITALLY_MIDDLEWARE = {
     "client_id": "144c7b7d-20ce-4aa6-bcf3-34f22806a8ca",
-    "env": "dev",  # "prod" or "dev"
+    "env": "prod",  # "prod" or "dev"
 }
 
 
